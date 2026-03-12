@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "VITE_MANIFEST_URL=https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json vite --host --force",
     "build": "tsc && GH_PAGES=true VITE_GH_PAGES=true VITE_MANIFEST_URL=https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json vite build && cp ./public/mockServiceWorkerDemo.js ./docs/mockServiceWorker.js",
-    "build:dev": "tsc && VITE_MANIFEST_URL=https://tonconnect-demo-dapp-with-react-ui.vercel.app/tonconnect-manifest.vercel.json vite build && cp ./public/mockServiceWorkerDemo.js ./docs/mockServiceWorker.js",
+    "build:dev": "tsc && VITE_MANIFEST_URL=https://risktowerbot.vercel.app/tonconnect-manifest.vercel.json vite build && cp ./public/mockServiceWorkerDemo.js ./docs/mockServiceWorker.js",
     "preview": "VITE_MANIFEST_URL=https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json vite preview"
   },
   "dependencies": {
