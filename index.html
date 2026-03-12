@@ -4,35 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Risk Tower</title>
-
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-      function tgEarlyReady() {
-        try {
-          var tg = window.Telegram && window.Telegram.WebApp;
-          if (tg) {
-            tg.ready();
-            tg.expand();
-          }
-        } catch (e) {
-          console.error('tgEarlyReady error', e);
-        }
-      }
-
-      setTimeout(tgEarlyReady, 0);
-      window.addEventListener('load', tgEarlyReady);
-    </script>
   </head>
-
   <body style="margin:0;background:#111827;">
-    <div
-      id="root"
-      style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:#ffffff;font-family:Arial,sans-serif;"
-    >
-      <div style="text-align:center;">
-        <div style="font-size:32px;font-weight:700;">Risk Tower</div>
-        <div style="margin-top:12px;font-size:18px;">Запуск приложения...</div>
-      </div>
-    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
