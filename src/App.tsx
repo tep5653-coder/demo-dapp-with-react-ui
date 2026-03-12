@@ -1,6 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 type GameState = 'idle' | 'active' | 'lost' | 'cashed';
+
+type HistoryItem = {
+  id: number;
+  result: 'win' | 'loss';
+  floor: number;
+  multiplier: number;
+  payout: string;
+  text: string;
+};
 
 export default function App() {
   const [floor, setFloor] = useState(1);
@@ -10,6 +19,7 @@ export default function App() {
   const [gameState, setGameState] = useState<GameState>('idle');
   const [lastWin, setLastWin] = useState<string>('—');
   const [riskText, setRiskText] = useState('Этаж 1: безопасный старт');
+  const [history, setHistory] = useState<HistoryItem[]>([]);
 
   useEffect(() => {
     try {
@@ -54,6 +64,18 @@ export default function App() {
     return 'Экстремальный риск';
   }
 
+  const successChancePercent = useMemo(() => {
+    return Math.round(getSuccessChance(floor) * 100);
+  }, [floor]);
+
+  const towerFloors = useMemo(() => {
+    return Array.from({ length: 12 }, (_, i) => 12 - i);
+  }, []);
+
+  function addHistory(item: HistoryItem) {
+    setHistory((prev) => [item, ...prev].slice(0, 6));
+  }
+
   function startRound() {
     setFloor(1);
     setMultiplier(1.2);
@@ -82,7 +104,16 @@ export default function App() {
     } else {
       setGameState('lost');
       setStatus(`Поражение на этаже ${floor}. Ставка сгорела`);
-      setRiskText(`Раунд завершен: проигрыш`);
+      setRiskText('Раунд завершен: проигрыш');
+
+      addHistory({
+        id: Date.now(),
+        result: 'loss',
+        floor,
+        multiplier,
+        payout: '0 TON',
+        text: `Проигрыш на ${floor} эт.`
+      });
     }
   }
 
@@ -99,6 +130,15 @@ export default function App() {
     setLastWin(`${payout} TON`);
     setStatus(`Результат зафиксирован: ${payout} TON`);
     setRiskText('Раунд завершен: cash out');
+
+    addHistory({
+      id: Date.now(),
+      result: 'win',
+      floor,
+      multiplier,
+      payout: `${payout} TON`,
+      text: `Cash out x${multiplier.toFixed(2)}`
+    });
   }
 
   function handleReset() {
@@ -118,14 +158,14 @@ export default function App() {
         background: 'linear-gradient(180deg, #111827 0%, #0b1220 100%)',
         color: '#ffffff',
         fontFamily: 'Arial, sans-serif',
-        padding: '20px 16px',
+        padding: '18px 14px 24px',
         boxSizing: 'border-box'
       }}
     >
       <div
         style={{
           width: '100%',
-          maxWidth: '420px',
+          maxWidth: '430px',
           margin: '0 auto'
         }}
       >
@@ -135,13 +175,13 @@ export default function App() {
             justifyContent: 'space-between',
             alignItems: 'flex-start',
             gap: '12px',
-            marginBottom: '18px'
+            marginBottom: '16px'
           }}
         >
           <div>
             <div style={{ fontSize: '30px', fontWeight: 700 }}>Risk Tower</div>
             <div style={{ marginTop: '6px', fontSize: '14px', opacity: 0.8 }}>
-              Прототип игрового экрана
+              MVP игрового экрана
             </div>
           </div>
 
@@ -169,7 +209,7 @@ export default function App() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
+            gridTemplateColumns: '1fr 1fr 1fr',
             gap: '12px',
             marginBottom: '14px'
           }}
@@ -179,11 +219,11 @@ export default function App() {
               background: 'rgba(255,255,255,0.06)',
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: '18px',
-              padding: '16px'
+              padding: '14px'
             }}
           >
-            <div style={{ fontSize: '14px', opacity: 0.75 }}>Этаж</div>
-            <div style={{ marginTop: '8px', fontSize: '28px', fontWeight: 700 }}>
+            <div style={{ fontSize: '13px', opacity: 0.75 }}>Этаж</div>
+            <div style={{ marginTop: '8px', fontSize: '24px', fontWeight: 700 }}>
               {floor}
             </div>
           </div>
@@ -193,13 +233,104 @@ export default function App() {
               background: 'rgba(255,255,255,0.06)',
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: '18px',
-              padding: '16px'
+              padding: '14px'
             }}
           >
-            <div style={{ fontSize: '14px', opacity: 0.75 }}>Множитель</div>
-            <div style={{ marginTop: '8px', fontSize: '28px', fontWeight: 700 }}>
+            <div style={{ fontSize: '13px', opacity: 0.75 }}>Множитель</div>
+            <div style={{ marginTop: '8px', fontSize: '24px', fontWeight: 700 }}>
               x{multiplier.toFixed(2)}
             </div>
+          </div>
+
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '18px',
+              padding: '14px'
+            }}
+          >
+            <div style={{ fontSize: '13px', opacity: 0.75 }}>Шанс</div>
+            <div style={{ marginTop: '8px', fontSize: '24px', fontWeight: 700 }}>
+              {successChancePercent}%
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '18px',
+            padding: '16px',
+            marginBottom: '14px'
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '12px'
+            }}
+          >
+            <div style={{ fontSize: '14px', opacity: 0.75 }}>Башня</div>
+            <div style={{ fontSize: '13px', opacity: 0.75 }}>
+              Текущий этаж: {floor}
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gap: '8px'
+            }}
+          >
+            {towerFloors.map((itemFloor) => {
+              const isCurrent = itemFloor === floor;
+              const isPassed = itemFloor < floor;
+              const isTop = itemFloor > floor;
+
+              let bg = 'rgba(255,255,255,0.04)';
+              let border = '1px solid rgba(255,255,255,0.08)';
+              let color = '#ffffff';
+
+              if (isCurrent) {
+                bg = 'linear-gradient(90deg, rgba(245,158,11,0.95), rgba(251,191,36,0.95))';
+                border = '1px solid rgba(251,191,36,1)';
+                color = '#231500';
+              } else if (isPassed) {
+                bg = 'rgba(34,197,94,0.16)';
+                border = '1px solid rgba(34,197,94,0.28)';
+              } else if (isTop) {
+                bg = 'rgba(255,255,255,0.03)';
+                border = '1px solid rgba(255,255,255,0.05)';
+              }
+
+              const floorMultiplier = (1.2 * Math.pow(1.35, itemFloor - 1)).toFixed(2);
+
+              return (
+                <div
+                  key={itemFloor}
+                  style={{
+                    background: bg,
+                    border,
+                    color,
+                    borderRadius: '14px',
+                    padding: '10px 12px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    transition: '0.2s ease'
+                  }}
+                >
+                  <div style={{ fontWeight: 700 }}>Этаж {itemFloor}</div>
+                  <div style={{ fontSize: '14px', opacity: 0.9 }}>
+                    x{floorMultiplier}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -216,10 +347,10 @@ export default function App() {
               background: 'rgba(255,255,255,0.06)',
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: '18px',
-              padding: '16px'
+              padding: '14px'
             }}
           >
-            <div style={{ fontSize: '14px', opacity: 0.75 }}>Ставка</div>
+            <div style={{ fontSize: '13px', opacity: 0.75 }}>Ставка</div>
             <div style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700 }}>
               {stake} TON
             </div>
@@ -230,10 +361,10 @@ export default function App() {
               background: 'rgba(255,255,255,0.06)',
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: '18px',
-              padding: '16px'
+              padding: '14px'
             }}
           >
-            <div style={{ fontSize: '14px', opacity: 0.75 }}>Последний win</div>
+            <div style={{ fontSize: '13px', opacity: 0.75 }}>Последний win</div>
             <div style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700 }}>
               {lastWin}
             </div>
@@ -332,7 +463,8 @@ export default function App() {
           style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
-            gap: '12px'
+            gap: '12px',
+            marginBottom: '14px'
           }}
         >
           <button
@@ -368,6 +500,68 @@ export default function App() {
           >
             Reset
           </button>
+        </div>
+
+        <div
+          style={{
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '18px',
+            padding: '16px'
+          }}
+        >
+          <div style={{ fontSize: '14px', opacity: 0.75, marginBottom: '10px' }}>
+            История раундов
+          </div>
+
+          {history.length === 0 ? (
+            <div style={{ fontSize: '14px', opacity: 0.7 }}>
+              Пока нет завершенных раундов
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: '10px' }}>
+              {history.map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '10px 12px',
+                    borderRadius: '14px',
+                    background:
+                      item.result === 'win'
+                        ? 'rgba(34,197,94,0.14)'
+                        : 'rgba(239,68,68,0.14)',
+                    border:
+                      item.result === 'win'
+                        ? '1px solid rgba(34,197,94,0.24)'
+                        : '1px solid rgba(239,68,68,0.24)'
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 700 }}>
+                      {item.text}
+                    </div>
+                    <div style={{ fontSize: '12px', opacity: 0.75, marginTop: '4px' }}>
+                      Этаж {item.floor} • x{item.multiplier.toFixed(2)}
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {item.payout}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
