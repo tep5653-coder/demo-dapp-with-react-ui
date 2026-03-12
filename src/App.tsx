@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 
+type GameState = 'idle' | 'active' | 'lost' | 'cashed';
+
 export default function App() {
   const [floor, setFloor] = useState(1);
   const [multiplier, setMultiplier] = useState(1.2);
   const [stake, setStake] = useState('0.10');
-  const [status, setStatus] = useState('Готов к раунду');
+  const [status, setStatus] = useState('Нажми Start Round');
+  const [gameState, setGameState] = useState<GameState>('idle');
+  const [lastWin, setLastWin] = useState<string>('—');
+  const [riskText, setRiskText] = useState('Этаж 1: безопасный старт');
 
   useEffect(() => {
     try {
@@ -34,24 +39,77 @@ export default function App() {
     }
   }, []);
 
-  function handleClimb() {
-    const nextFloor = floor + 1;
-    const nextMultiplier = Number((multiplier * 1.35).toFixed(2));
+  function getSuccessChance(currentFloor: number) {
+    if (currentFloor <= 3) return 0.9;
+    if (currentFloor <= 6) return 0.75;
+    if (currentFloor <= 9) return 0.58;
+    if (currentFloor <= 12) return 0.42;
+    return 0.28;
+  }
 
-    setFloor(nextFloor);
-    setMultiplier(nextMultiplier);
-    setStatus(`Поднялись на этаж ${nextFloor}`);
+  function getRiskLabel(currentFloor: number) {
+    if (currentFloor <= 3) return 'Низкий риск';
+    if (currentFloor <= 6) return 'Средний риск';
+    if (currentFloor <= 9) return 'Высокий риск';
+    return 'Экстремальный риск';
+  }
+
+  function startRound() {
+    setFloor(1);
+    setMultiplier(1.2);
+    setGameState('active');
+    setStatus('Раунд начался');
+    setRiskText(`Этаж 1: ${getRiskLabel(1)}`);
+  }
+
+  function handleClimb() {
+    if (gameState !== 'active') {
+      setStatus('Сначала нажми Start Round');
+      return;
+    }
+
+    const successChance = getSuccessChance(floor);
+    const roll = Math.random();
+
+    if (roll <= successChance) {
+      const nextFloor = floor + 1;
+      const nextMultiplier = Number((multiplier * 1.35).toFixed(2));
+
+      setFloor(nextFloor);
+      setMultiplier(nextMultiplier);
+      setStatus(`Успех. Поднялись на этаж ${nextFloor}`);
+      setRiskText(`Этаж ${nextFloor}: ${getRiskLabel(nextFloor)}`);
+    } else {
+      setGameState('lost');
+      setStatus(`Поражение на этаже ${floor}. Ставка сгорела`);
+      setRiskText(`Раунд завершен: проигрыш`);
+    }
   }
 
   function handleCashOut() {
-    setStatus(`Фиксация результата x${multiplier.toFixed(2)}`);
+    if (gameState !== 'active') {
+      setStatus('Нет активного раунда для фиксации');
+      return;
+    }
+
+    const stakeValue = Number(stake || '0');
+    const payout = (stakeValue * multiplier).toFixed(2);
+
+    setGameState('cashed');
+    setLastWin(`${payout} TON`);
+    setStatus(`Результат зафиксирован: ${payout} TON`);
+    setRiskText('Раунд завершен: cash out');
   }
 
   function handleReset() {
     setFloor(1);
     setMultiplier(1.2);
-    setStatus('Раунд сброшен');
+    setGameState('idle');
+    setStatus('Нажми Start Round');
+    setRiskText('Этаж 1: безопасный старт');
   }
+
+  const isRoundActive = gameState === 'active';
 
   return (
     <div
@@ -103,6 +161,9 @@ export default function App() {
           <div style={{ marginTop: '8px', fontSize: '20px', fontWeight: 700 }}>
             {status}
           </div>
+          <div style={{ marginTop: '10px', fontSize: '14px', opacity: 0.8 }}>
+            {riskText}
+          </div>
         </div>
 
         <div
@@ -144,6 +205,43 @@ export default function App() {
 
         <div
           style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '12px',
+            marginBottom: '14px'
+          }}
+        >
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '18px',
+              padding: '16px'
+            }}
+          >
+            <div style={{ fontSize: '14px', opacity: 0.75 }}>Ставка</div>
+            <div style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700 }}>
+              {stake} TON
+            </div>
+          </div>
+
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '18px',
+              padding: '16px'
+            }}
+          >
+            <div style={{ fontSize: '14px', opacity: 0.75 }}>Последний win</div>
+            <div style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700 }}>
+              {lastWin}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
             background: 'rgba(255,255,255,0.06)',
             border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: '18px',
@@ -159,6 +257,7 @@ export default function App() {
             value={stake}
             onChange={(e) => setStake(e.target.value)}
             placeholder="0.10"
+            disabled={isRoundActive}
             style={{
               width: '100%',
               boxSizing: 'border-box',
@@ -168,7 +267,8 @@ export default function App() {
               background: 'rgba(255,255,255,0.05)',
               color: '#ffffff',
               fontSize: '16px',
-              outline: 'none'
+              outline: 'none',
+              opacity: isRoundActive ? 0.7 : 1
             }}
           />
 
@@ -193,15 +293,17 @@ export default function App() {
         >
           <button
             onClick={handleCashOut}
+            disabled={!isRoundActive}
             style={{
               border: 'none',
               borderRadius: '16px',
               padding: '16px',
               fontSize: '16px',
               fontWeight: 700,
-              cursor: 'pointer',
+              cursor: isRoundActive ? 'pointer' : 'default',
               background: '#22c55e',
-              color: '#08130b'
+              color: '#08130b',
+              opacity: isRoundActive ? 1 : 0.55
             }}
           >
             Cash Out
@@ -209,37 +311,64 @@ export default function App() {
 
           <button
             onClick={handleClimb}
+            disabled={!isRoundActive}
             style={{
               border: 'none',
               borderRadius: '16px',
               padding: '16px',
               fontSize: '16px',
               fontWeight: 700,
-              cursor: 'pointer',
+              cursor: isRoundActive ? 'pointer' : 'default',
               background: '#f59e0b',
-              color: '#1f1300'
+              color: '#1f1300',
+              opacity: isRoundActive ? 1 : 0.55
             }}
           >
             Climb
           </button>
         </div>
 
-        <button
-          onClick={handleReset}
+        <div
           style={{
-            width: '100%',
-            border: 'none',
-            borderRadius: '16px',
-            padding: '14px',
-            fontSize: '15px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            background: 'rgba(255,255,255,0.08)',
-            color: '#ffffff'
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '12px'
           }}
         >
-          Reset
-        </button>
+          <button
+            onClick={startRound}
+            disabled={isRoundActive}
+            style={{
+              border: 'none',
+              borderRadius: '16px',
+              padding: '14px',
+              fontSize: '15px',
+              fontWeight: 700,
+              cursor: isRoundActive ? 'default' : 'pointer',
+              background: '#3b82f6',
+              color: '#ffffff',
+              opacity: isRoundActive ? 0.55 : 1
+            }}
+          >
+            Start Round
+          </button>
+
+          <button
+            onClick={handleReset}
+            style={{
+              border: 'none',
+              borderRadius: '16px',
+              padding: '14px',
+              fontSize: '15px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              background: 'rgba(255,255,255,0.08)',
+              color: '#ffffff'
+            }}
+          >
+            Reset
+          </button>
+        </div>
       </div>
     </div>
   );
