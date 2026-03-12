@@ -1,6 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function App() {
+  useEffect(() => {
+    const tg = (window as any).Telegram?.WebApp;
+
+    try {
+      tg?.ready();
+      tg?.expand();
+    } catch (e) {
+      console.error('Telegram WebApp init error:', e);
+    }
+  }, []);
+
   return (
     <div
       style={{
@@ -16,9 +27,9 @@ export default function App() {
         textAlign: 'center'
       }}
     >
-      <h1 style={{ margin: 0, fontSize: '32px' }}>Risk Tower</h1>
+      <h1 style={{ margin: 0, fontSize: '32px' }}>Башня Риска</h1>
       <p style={{ marginTop: '12px', fontSize: '18px' }}>
-        Test screen is working
+        Тестовый экран работает
       </p>
     </div>
   );
