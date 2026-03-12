@@ -1,2 +1,69 @@
-Terms of use example
-...
+RiskTowerBot Terms of Use
+
+Last updated: 2026-03-12
+
+Welcome to RiskTowerBot.
+
+These Terms of Use govern your access to and use of the RiskTowerBot application, website interfaces, Telegram Mini App interfaces, and related services (collectively, the "Service").
+
+By accessing or using the Service, you agree to these Terms of Use.
+
+1. General
+RiskTowerBot provides an interactive digital application interface accessible through Telegram and related web technologies.
+The Service may include wallet connection features, interface elements, game-like mechanics, account-related data displays, and other digital features.
+
+2. Eligibility
+You are solely responsible for ensuring that your access to and use of the Service is lawful in your country, region, and jurisdiction.
+You may not use the Service if such use is prohibited by applicable law.
+
+3. No Guarantee of Availability
+The Service is provided on an "as is" and "as available" basis.
+We do not guarantee uninterrupted access, error-free operation, compatibility with all devices, or continuous availability.
+
+4. User Responsibility
+You are responsible for:
+- your device security;
+- your Telegram account security;
+- your wallet security;
+- verifying transaction details before approval;
+- complying with all laws and regulations applicable to you.
+
+5. Wallet Connections
+The Service may allow you to connect a third-party digital wallet.
+You understand and agree that:
+- wallet software is provided by third parties;
+- we do not control your wallet provider;
+- we do not store your seed phrase or private keys;
+- you are solely responsible for approving or rejecting wallet actions.
+
+6. Transactions
+Any blockchain-related action requires your own confirmation through your wallet.
+Blockchain transactions may be irreversible.
+Network fees, delays, failures, and confirmation timing depend on the underlying blockchain and wallet infrastructure.
+
+7. No Financial, Investment, or Legal Advice
+Nothing in the Service constitutes financial advice, investment advice, legal advice, tax advice, or a recommendation to enter into any transaction.
+
+8. Service Changes
+We may modify, suspend, restrict, or discontinue any part of the Service at any time without prior notice.
+
+9. Prohibited Use
+You agree not to:
+- use the Service for unlawful purposes;
+- interfere with the Service or attempt unauthorized access;
+- exploit bugs, vulnerabilities, or technical errors;
+- use bots, scripts, automation, or abuse mechanisms unless explicitly permitted.
+
+10. Limitation of Liability
+To the maximum extent permitted by applicable law, the Service provider shall not be liable for any direct, indirect, incidental, consequential, special, or punitive damages arising from the use of or inability to use the Service.
+
+11. Jurisdiction and Compliance
+You are solely responsible for determining whether use of the Service is permitted in your jurisdiction.
+You must not use the Service where prohibited by law.
+
+12. Changes to These Terms
+These Terms may be updated from time to time.
+Continued use of the Service after an update constitutes acceptance of the revised Terms.
+
+13. Contact
+For contact regarding these Terms, use the official contact channel associated with RiskTowerBot.
