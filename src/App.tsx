@@ -2,13 +2,12 @@ import React, { useEffect } from 'react';
 
 export default function App() {
   useEffect(() => {
-    const tg = (window as any).Telegram?.WebApp;
-
     try {
+      const tg = (window as any).Telegram?.WebApp;
       tg?.ready();
       tg?.expand();
     } catch (e) {
-      console.error('Telegram WebApp init error:', e);
+      console.error('Telegram init error', e);
     }
   }, []);
 
@@ -21,16 +20,20 @@ export default function App() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        flexDirection: 'column',
         fontFamily: 'Arial, sans-serif',
-        padding: '24px',
-        textAlign: 'center'
+        textAlign: 'center',
+        padding: '24px'
       }}
     >
-      <h1 style={{ margin: 0, fontSize: '32px' }}>Башня Риска</h1>
-      <p style={{ marginTop: '12px', fontSize: '18px' }}>
-        Тестовый экран работает
-      </p>
+      <div>
+        <div style={{ fontSize: '32px', fontWeight: 700 }}>Risk Tower</div>
+        <div style={{ marginTop: '12px', fontSize: '18px' }}>
+          Базовый тестовый экран
+        </div>
+        <div style={{ marginTop: '10px', fontSize: '15px', opacity: 0.8 }}>
+          Если вы это видите, Mini App открыт правильно
+        </div>
+      </div>
     </div>
   );
 }
