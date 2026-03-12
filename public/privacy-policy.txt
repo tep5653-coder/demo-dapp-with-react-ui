@@ -1,2 +1,56 @@
-Privacy Policy example
-...
+RiskTowerBot Privacy Policy
+
+Last updated: 2026-03-12
+
+This Privacy Policy explains how RiskTowerBot ("we", "our", or "us") may collect, use, and process limited technical and interaction data when you use the Service.
+
+1. Scope
+This Privacy Policy applies to the RiskTowerBot application, Telegram Mini App interfaces, related websites, and technical infrastructure used to operate the Service.
+
+2. Data We May Process
+Depending on how the Service is configured, we may process:
+- wallet address information after connection;
+- technical session identifiers;
+- device and browser-related technical information;
+- Telegram Mini App context data made available by the Telegram platform;
+- interaction events within the application interface;
+- transaction-related metadata visible through public blockchain infrastructure.
+
+3. Data We Do Not Store
+We do not store:
+- seed phrases;
+- wallet private keys;
+- wallet recovery phrases.
+
+4. Wallet Providers and Blockchain Networks
+Wallet connection and transaction approval functions are provided through third-party wallet software and blockchain infrastructure.
+Public blockchain transactions may be permanently visible on the blockchain.
+
+5. How We Use Data
+We may use technical and interaction data to:
+- operate the Service;
+- maintain sessions;
+- improve stability and performance;
+- troubleshoot technical issues;
+- detect abuse, fraud, or misuse;
+- maintain security.
+
+6. Data Sharing
+We may share limited technical data with infrastructure, hosting, analytics, wallet integration, or security providers only to the extent reasonably necessary to operate or protect the Service.
+
+7. Data Retention
+We may retain technical logs, interaction records, and operational data for as long as reasonably necessary for security, troubleshooting, compliance, and service operation purposes.
+
+8. Security
+We take reasonable technical and organizational measures to protect data handled by the Service.
+However, no internet-based system can be guaranteed to be completely secure.
+
+9. International Use
+You are responsible for determining whether your use of the Service is lawful in your jurisdiction.
+
+10. Changes to This Policy
+We may update this Privacy Policy from time to time.
+The latest version will be made available through the Service or related interfaces.
+
+11. Contact
+For privacy-related questions, use the official contact channel associated with RiskTowerBot.
