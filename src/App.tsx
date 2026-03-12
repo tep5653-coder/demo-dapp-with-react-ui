@@ -11,6 +11,8 @@ type HistoryItem = {
   text: string;
 };
 
+const QUICK_STAKES = ['0.10', '0.25', '0.50', '1.00'];
+
 export default function App() {
   const [floor, setFloor] = useState(1);
   const [multiplier, setMultiplier] = useState(1.2);
@@ -20,6 +22,11 @@ export default function App() {
   const [lastWin, setLastWin] = useState<string>('—');
   const [riskText, setRiskText] = useState('Этаж 1: безопасный старт');
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [demoBalance, setDemoBalance] = useState(10);
+  const [lockedStake, setLockedStake] = useState(0);
+  const [sessionWins, setSessionWins] = useState(0);
+  const [sessionLosses, setSessionLosses] = useState(0);
+  const [sessionRounds, setSessionRounds] = useState(0);
 
   useEffect(() => {
     try {
@@ -72,16 +79,35 @@ export default function App() {
     return Array.from({ length: 12 }, (_, i) => 12 - i);
   }, []);
 
+  const totalProfit = useMemo(() => {
+    return (demoBalance - 10).toFixed(2);
+  }, [demoBalance]);
+
   function addHistory(item: HistoryItem) {
     setHistory((prev) => [item, ...prev].slice(0, 6));
   }
 
   function startRound() {
+    const stakeValue = Number(stake || '0');
+
+    if (!Number.isFinite(stakeValue) || stakeValue <= 0) {
+      setStatus('Укажи корректную ставку');
+      return;
+    }
+
+    if (stakeValue > demoBalance) {
+      setStatus('Недостаточно demo balance');
+      return;
+    }
+
+    setDemoBalance((prev) => Number((prev - stakeValue).toFixed(2)));
+    setLockedStake(stakeValue);
     setFloor(1);
     setMultiplier(1.2);
     setGameState('active');
     setStatus('Раунд начался');
     setRiskText(`Этаж 1: ${getRiskLabel(1)}`);
+    setSessionRounds((prev) => prev + 1);
   }
 
   function handleClimb() {
@@ -105,6 +131,7 @@ export default function App() {
       setGameState('lost');
       setStatus(`Поражение на этаже ${floor}. Ставка сгорела`);
       setRiskText('Раунд завершен: проигрыш');
+      setSessionLosses((prev) => prev + 1);
 
       addHistory({
         id: Date.now(),
@@ -114,6 +141,8 @@ export default function App() {
         payout: '0 TON',
         text: `Проигрыш на ${floor} эт.`
       });
+
+      setLockedStake(0);
     }
   }
 
@@ -123,30 +152,38 @@ export default function App() {
       return;
     }
 
-    const stakeValue = Number(stake || '0');
-    const payout = (stakeValue * multiplier).toFixed(2);
+    const payout = Number((lockedStake * multiplier).toFixed(2));
 
     setGameState('cashed');
-    setLastWin(`${payout} TON`);
-    setStatus(`Результат зафиксирован: ${payout} TON`);
+    setLastWin(`${payout.toFixed(2)} TON`);
+    setDemoBalance((prev) => Number((prev + payout).toFixed(2)));
+    setStatus(`Результат зафиксирован: ${payout.toFixed(2)} TON`);
     setRiskText('Раунд завершен: cash out');
+    setSessionWins((prev) => prev + 1);
 
     addHistory({
       id: Date.now(),
       result: 'win',
       floor,
       multiplier,
-      payout: `${payout} TON`,
+      payout: `${payout.toFixed(2)} TON`,
       text: `Cash out x${multiplier.toFixed(2)}`
     });
+
+    setLockedStake(0);
   }
 
   function handleReset() {
+    if (gameState === 'active' && lockedStake > 0) {
+      setDemoBalance((prev) => Number((prev + lockedStake).toFixed(2)));
+    }
+
     setFloor(1);
     setMultiplier(1.2);
     setGameState('idle');
     setStatus('Нажми Start Round');
     setRiskText('Этаж 1: безопасный старт');
+    setLockedStake(0);
   }
 
   const isRoundActive = gameState === 'active';
@@ -171,21 +208,66 @@ export default function App() {
       >
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            gap: '12px',
+            background: 'linear-gradient(135deg, rgba(59,130,246,0.28), rgba(245,158,11,0.18))',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '20px',
+            padding: '16px',
             marginBottom: '16px'
           }}
         >
-          <div>
-            <div style={{ fontSize: '30px', fontWeight: 700 }}>Risk Tower</div>
-            <div style={{ marginTop: '6px', fontSize: '14px', opacity: 0.8 }}>
-              MVP игрового экрана
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              gap: '12px'
+            }}
+          >
+            <div>
+              <div style={{ fontSize: '30px', fontWeight: 700 }}>Risk Tower</div>
+              <div style={{ marginTop: '6px', fontSize: '14px', opacity: 0.82 }}>
+                Demo MVP • игровой экран
+              </div>
             </div>
+
+            <div id="ton-connect"></div>
           </div>
 
-          <div id="ton-connect"></div>
+          <div
+            style={{
+              marginTop: '16px',
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '12px'
+            }}
+          >
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                borderRadius: '16px',
+                padding: '12px'
+              }}
+            >
+              <div style={{ fontSize: '13px', opacity: 0.75 }}>Demo balance</div>
+              <div style={{ marginTop: '6px', fontSize: '24px', fontWeight: 700 }}>
+                {demoBalance.toFixed(2)} TON
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                borderRadius: '16px',
+                padding: '12px'
+              }}
+            >
+              <div style={{ fontSize: '13px', opacity: 0.75 }}>P/L сессии</div>
+              <div style={{ marginTop: '6px', fontSize: '24px', fontWeight: 700 }}>
+                {Number(totalProfit) >= 0 ? '+' : ''}
+                {totalProfit} TON
+              </div>
+            </div>
+          </div>
         </div>
 
         <div
@@ -259,6 +341,57 @@ export default function App() {
 
         <div
           style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr 1fr',
+            gap: '12px',
+            marginBottom: '14px'
+          }}
+        >
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '18px',
+              padding: '14px'
+            }}
+          >
+            <div style={{ fontSize: '13px', opacity: 0.75 }}>Раунды</div>
+            <div style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700 }}>
+              {sessionRounds}
+            </div>
+          </div>
+
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '18px',
+              padding: '14px'
+            }}
+          >
+            <div style={{ fontSize: '13px', opacity: 0.75 }}>Wins</div>
+            <div style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700 }}>
+              {sessionWins}
+            </div>
+          </div>
+
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '18px',
+              padding: '14px'
+            }}
+          >
+            <div style={{ fontSize: '13px', opacity: 0.75 }}>Losses</div>
+            <div style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700 }}>
+              {sessionLosses}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
             background: 'rgba(255,255,255,0.06)',
             border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: '18px',
@@ -280,12 +413,7 @@ export default function App() {
             </div>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gap: '8px'
-            }}
-          >
+          <div style={{ display: 'grid', gap: '8px' }}>
             {towerFloors.map((itemFloor) => {
               const isCurrent = itemFloor === floor;
               const isPassed = itemFloor < floor;
@@ -336,43 +464,6 @@ export default function App() {
 
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '12px',
-            marginBottom: '14px'
-          }}
-        >
-          <div
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '18px',
-              padding: '14px'
-            }}
-          >
-            <div style={{ fontSize: '13px', opacity: 0.75 }}>Ставка</div>
-            <div style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700 }}>
-              {stake} TON
-            </div>
-          </div>
-
-          <div
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '18px',
-              padding: '14px'
-            }}
-          >
-            <div style={{ fontSize: '13px', opacity: 0.75 }}>Последний win</div>
-            <div style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700 }}>
-              {lastWin}
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
             background: 'rgba(255,255,255,0.06)',
             border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: '18px',
@@ -405,12 +496,79 @@ export default function App() {
 
           <div
             style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '8px',
+              marginTop: '12px'
+            }}
+          >
+            {QUICK_STAKES.map((value) => (
+              <button
+                key={value}
+                onClick={() => setStake(value)}
+                disabled={isRoundActive}
+                style={{
+                  border: stake === value ? '1px solid rgba(59,130,246,0.95)' : '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '12px',
+                  padding: '10px 8px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: isRoundActive ? 'default' : 'pointer',
+                  background: stake === value ? 'rgba(59,130,246,0.22)' : 'rgba(255,255,255,0.05)',
+                  color: '#ffffff',
+                  opacity: isRoundActive ? 0.6 : 1
+                }}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+
+          <div
+            style={{
               marginTop: '10px',
               fontSize: '13px',
               opacity: 0.7
             }}
           >
-            Тестовый режим. Транзакции пока не подключены.
+            Тестовый режим. Реальные транзакции пока не подключены.
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '12px',
+            marginBottom: '14px'
+          }}
+        >
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '18px',
+              padding: '14px'
+            }}
+          >
+            <div style={{ fontSize: '13px', opacity: 0.75 }}>Locked stake</div>
+            <div style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700 }}>
+              {lockedStake.toFixed(2)} TON
+            </div>
+          </div>
+
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '18px',
+              padding: '14px'
+            }}
+          >
+            <div style={{ fontSize: '13px', opacity: 0.75 }}>Последний win</div>
+            <div style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700 }}>
+              {lastWin}
+            </div>
           </div>
         </div>
 
