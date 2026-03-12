@@ -1,16 +1,7 @@
 import React, { useEffect } from 'react';
+import { TonConnectUIProvider, TonConnectButton } from '@tonconnect/ui-react';
 
-export default function App() {
-  useEffect(() => {
-    try {
-      const tg = (window as any).Telegram?.WebApp;
-      tg?.ready();
-      tg?.expand();
-    } catch (e) {
-      console.error('Telegram init error', e);
-    }
-  }, []);
-
+function AppContent() {
   return (
     <div
       style={{
@@ -25,15 +16,33 @@ export default function App() {
         padding: '24px'
       }}
     >
-      <div>
+      <div style={{ width: '100%', maxWidth: '420px' }}>
         <div style={{ fontSize: '32px', fontWeight: 700 }}>Risk Tower</div>
         <div style={{ marginTop: '12px', fontSize: '18px' }}>
           Базовый тестовый экран
         </div>
-        <div style={{ marginTop: '10px', fontSize: '15px', opacity: 0.8 }}>
-          Если вы это видите, Mini App открыт правильно
+        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+          <TonConnectButton />
         </div>
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  useEffect(() => {
+    try {
+      const tg = (window as any).Telegram?.WebApp;
+      tg?.ready();
+      tg?.expand();
+    } catch (e) {
+      console.error('Telegram init error', e);
+    }
+  }, []);
+
+  return (
+    <TonConnectUIProvider manifestUrl="https://risktowerbot.vercel.app/tonconnect-manifest.vercel.json">
+      <AppContent />
+    </TonConnectUIProvider>
   );
 }
